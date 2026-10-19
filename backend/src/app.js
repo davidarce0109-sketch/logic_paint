@@ -1,12 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const startupRoutes = require('./startup/routes');
+const helmet = require('helmet');
+const createRoutes = require('./routes');
+const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 
-const app = express();
+function createApp(container) {
+  const app = express();
+  app.disable('x-powered-by');
+  app.use(helmet());
+  app.use(cors({ origin: container.config.corsOrigin }));
+  app.use(express.json({ limit: '10kb' }));
+  app.use('/api', createRoutes(container));
+  app.use(notFound);
+  app.use(errorHandler);
+  return app;
+}
 
-app.use(cors());
-startupRoutes(app);
-app.use(errorHandler);
-
-module.exports = app;
+module.exports = { createApp };

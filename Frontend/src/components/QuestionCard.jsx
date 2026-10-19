@@ -1,32 +1,61 @@
-import React from 'react';
+import AnswerForm from './AnswerForm.jsx';
+import FeedbackBanner from './FeedbackBanner.jsx';
+import { useGame } from '../hooks/useGame.js';
+import { useQuestions } from '../hooks/useQuestions.js';
+import { QUESTION_STATUS } from '../config/constants.js';
+import { nextOpenId } from '../domain/questionNavigation.js';
 
-export const QuestionCard = ({ question, index, selectedAnswer, setSelectedAnswer, onSubmit, feedback, onNext, onSkip }) => {
+export default function QuestionCard() {
+  const { busy, questions, actions } = useGame();
+  const { selected, selectedFeedback } = useQuestions();
+
+  if (!selected) {
     return (
-        <div style={{ background: '#1E293B', padding: '20px', borderRadius: '8px' }}>
-            <h3>Pregunta #{index + 1} ({question.difficulty})</h3>
-            <p>{question.statement}</p>
-            <form onSubmit={onSubmit}>
-                {question.options ? (
-                    question.options.map((opt, i) => (
-                        <label key={i} style={{ display: 'block', margin: '10px 0', cursor: 'pointer' }}>
-                            <input type="radio" name="opt" value={opt} onChange={e => setSelectedAnswer(e.target.value)} /> {opt}
-                        </label>
-                    ))
-                ) : (
-                    <input type="text" placeholder="Respuesta numérica..." value={selectedAnswer} onChange={e => setSelectedAnswer(e.target.value)} />
-                )}
-                <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                    <button type="submit">Responder</button>
-                    <button type="button" onClick={onSkip} style={{ background: '#64748B' }}>Pasar</button>
-                </div>
-            </form>
-            {feedback && (
-                <div style={{ marginTop: '15px', padding: '10px', background: feedback.correct ? '#065F46' : '#991B1B', borderRadius: '4px' }}>
-                    <p><strong>{feedback.message}</strong></p>
-                    <p>{feedback.explanation}</p>
-                    <button onClick={onNext} style={{ marginTop: '10px' }}>Siguiente</button>
-                </div>
-            )}
-        </div>
+      <section className="question-card question-card--empty">
+        <h2>Sin preguntas pendientes</h2>
+        <p>Has resuelto todas las preguntas disponibles.</p>
+      </section>
     );
-};
+  }
+
+  const solved = selected.status === QUESTION_STATUS.SOLVED;
+  const canGoNext = nextOpenId(questions, selected.id) !== null;
+
+  return (
+    <section className="question-card" aria-labelledby="question-title">
+      <header className="question-card__head">
+        <span className="question-card__number" aria-hidden="true">{selected.number}</span>
+        <div>
+          <h2 id="question-title" className="question-card__title">Pregunta {selected.number}</h2>
+          <p className="question-card__meta">
+            {selected.typeLabel} · dificultad {selected.difficulty}/5 · sugerido {selected.suggestedSeconds} s
+            {selected.attempts > 0 ? ` · intentos ${selected.attempts}` : ''}
+          </p>
+        </div>
+      </header>
+
+      <p className="question-card__statement">{selected.statement}</p>
+
+      {selected.hintUsed && selected.hint && <p className="hint hint--shown">Pista: {selected.hint}</p>}
+      {selected.hintAvailable && !selected.hintUsed && !solved && (
+        <button type="button" className="link-button" onClick={actions.requestHint} disabled={busy}>
+          Ver una pista (resta puntos)
+        </button>
+      )}
+
+      {solved ? (
+        <p className="question-card__solved">Esta pregunta ya está resuelta.</p>
+      ) : (
+        <AnswerForm
+          key={selected.id}
+          question={selected}
+          disabled={busy}
+          onSubmit={actions.submitAnswer}
+          onSkip={actions.skipQuestion}
+        />
+      )}
+
+      <FeedbackBanner feedback={selectedFeedback} onNext={actions.goToNextQuestion} canGoNext={canGoNext} />
+    </section>
+  );
+}

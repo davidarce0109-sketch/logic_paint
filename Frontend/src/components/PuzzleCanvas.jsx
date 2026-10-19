@@ -1,19 +1,24 @@
-import React from 'react';
-import { useGame } from '../context/GameContext';
+import PuzzlePieceShape from './PuzzlePieceShape.jsx';
+import { PUZZLE_VIEWBOX } from '../config/constants.js';
 
-export const PuzzleCanvas = () => {
-    const { paintedPieces } = useGame();
-    return (
-        <div style={{ width: '300px', height: '300px', border: '2px dashed #475569', background: '#1E293B' }}>
-            <svg width="100%" height="100%" viewBox="0 0 300 300">
-                {paintedPieces.map((piece, idx) => (
-                    <g key={idx} transform={`translate(${piece.position.x}, ${piece.position.y})`}>
-                        {piece.shape === 'triangle' && <polygon points="30,0 60,50 0,50" fill={piece.color} />}
-                        {piece.shape === 'rectangle' && <rect width="50" height="40" fill={piece.color} />}
-                        {piece.shape === 'circle' && <circle cx="25" cy="25" r="25" fill={piece.color} />}
-                    </g>
-                ))}
-            </svg>
-        </div>
-    );
-};
+/** Capa de presentación SVG: recibe piezas ya estructuradas y las pinta en orden. */
+export default function PuzzleCanvas({ pieces, meta = PUZZLE_VIEWBOX, freshNumbers = [], label, empty = false }) {
+  const ordered = [...pieces].sort((a, b) => a.number - b.number);
+  return (
+    <figure className="canvas">
+      <svg viewBox={`0 0 ${meta.width} ${meta.height}`} role="img" aria-label={label} className="canvas__svg">
+        <defs>
+          <pattern id="canvas-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0H0V20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width={meta.width} height={meta.height} className="canvas__bg" />
+        <rect width={meta.width} height={meta.height} fill="url(#canvas-grid)" className="canvas__grid" />
+        {ordered.map((piece) => (
+          <PuzzlePieceShape key={piece.pieceId} piece={piece} fresh={freshNumbers.includes(piece.number)} />
+        ))}
+      </svg>
+      {empty && <figcaption className="canvas__empty">Tu imagen aparecerá aquí, pieza a pieza.</figcaption>}
+    </figure>
+  );
+}

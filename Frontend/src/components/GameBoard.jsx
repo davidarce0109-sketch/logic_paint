@@ -1,50 +1,55 @@
-import React, { useState } from 'react';
-import { useGame } from '../context/GameContext';
-import { QuestionCard } from './QuestionCard';
-import { PuzzleCanvas } from './PuzzleCanvas';
+import { useCallback, useState } from 'react';
+import PuzzleCanvas from './PuzzleCanvas.jsx';
+import ProgressBar from './ProgressBar.jsx';
+import QuestionCard from './QuestionCard.jsx';
+import QuestionList from './QuestionList.jsx';
+import { useGame } from '../hooks/useGame.js';
+import { useGameEvents } from '../hooks/useGameEvents.js';
+import { FRESH_PIECE_MS, GAME_EVENTS, GAME_STATUS } from '../config/constants.js';
 
-export const GameBoard = () => {
-    const { questions, currentQuestionIndex, submitAnswer, setCurrentQuestionIndex, skipQuestion } = useGame();
-    const [feedback, setFeedback] = useState(null);
-    const [selectedAnswer, setSelectedAnswer] = useState('');
+export default function GameBoard() {
+  const { game, actions, error } = useGame();
+  const [fresh, setFresh] = useState([]);
 
-    const currentQ = questions[currentQuestionIndex];
+  const markFresh = useCallback((event) => {
+    const { number } = event.payload;
+    setFresh((current) => [...current, number]);
+    setTimeout(() => setFresh((current) => current.filter((n) => n !== number)), FRESH_PIECE_MS);
+  }, []);
+  useGameEvents(GAME_EVENTS.PIECE_PAINTED, markFresh);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!currentQ) return;
-        const res = await submitAnswer(currentQ.id, selectedAnswer);
-        setFeedback(res);
-    };
+  const paused = game.status === GAME_STATUS.PAUSED;
 
-    return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-            <div>
-                <PuzzleCanvas />
-            </div>
-            <div>
-                {currentQ ? (
-                    <QuestionCard 
-                        question={currentQ} 
-                        index={currentQuestionIndex} 
-                        selectedAnswer={selectedAnswer}
-                        setSelectedAnswer={setSelectedAnswer}
-                        onSubmit={handleSubmit}
-                        feedback={feedback}
-                        onNext={() => {
-                            setFeedback(null);
-                            setSelectedAnswer('');
-                            setCurrentQuestionIndex(prev => (prev + 1) % questions.length);
-                        }}
-                        onSkip={() => {
-                            skipQuestion(currentQ.id);
-                            setFeedback(null);
-                            setSelectedAnswer('');
-                            setCurrentQuestionIndex(prev => (prev + 1) % questions.length);
-                        }}
-                    />
-                ) : <p>Cargando preguntas...</p>}
-            </div>
+  return (
+    <main className="board">
+      <section className="board__art" aria-label="Tu imagen">
+        <PuzzleCanvas
+          pieces={game.paintedPieces}
+          freshNumbers={fresh}
+          label={`Imagen en construcción: ${game.progress.painted} de ${game.progress.total} piezas`}
+          empty={game.progress.painted === 0}
+        />
+        <ProgressBar painted={game.progress.painted} total={game.progress.total} />
+      </section>
+
+      <div className="board__work">
+        {error && <p className="alert" role="alert">{error}</p>}
+        {paused ? (
+          <section className="pause">
+            <h2>Partida en pausa</h2>
+            <p>El tiempo está detenido. Las preguntas se ocultan mientras dure la pausa.</p>
+            <button type="button" className="btn btn--primary" onClick={actions.togglePause}>Reanudar</button>
+          </section>
+        ) : (
+          <QuestionCard />
+        )}
+      </div>
+
+      {!paused && (
+        <div className="board__list">
+          <QuestionList />
         </div>
-    );
-};
+      )}
+    </main>
+  );
+}

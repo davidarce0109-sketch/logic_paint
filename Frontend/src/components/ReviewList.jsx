@@ -1,4 +1,10 @@
-const STATUS_TEXT = { pending: 'Sin responder', passed: 'Pasada', incorrect: 'Incorrecta', solved: 'Resuelta', placed: 'Resuelta' };
+const STATUS_TEXT = {
+  pending: 'Sin responder',
+  passed: 'Pasada',
+  incorrect: 'Incorrecta',
+  placed: 'Correcta · su pieza se incorporó',
+  locked: 'Correcta · su pieza no se pudo incorporar',
+};
 
 /** Repaso final: ahora que la partida terminó sí se muestran respuestas y explicaciones. */
 export default function ReviewList({ review }) {

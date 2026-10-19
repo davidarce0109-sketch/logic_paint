@@ -2,7 +2,7 @@ import AnswerForm from './AnswerForm.jsx';
 import FeedbackBanner from './FeedbackBanner.jsx';
 import { useGame } from '../hooks/useGame.js';
 import { useQuestions } from '../hooks/useQuestions.js';
-import { QUESTION_STATUS } from '../config/constants.js';
+import { DIFFICULTY_LABELS, QUESTION_STATUS } from '../config/constants.js';
 import { nextOpenId } from '../domain/questionNavigation.js';
 
 export default function QuestionCard() {
@@ -28,7 +28,7 @@ export default function QuestionCard() {
         <div>
           <h2 id="question-title" className="question-card__title">Pregunta {selected.number}</h2>
           <p className="question-card__meta">
-            {selected.typeLabel} · dificultad {selected.difficulty}/5 · sugerido {selected.suggestedSeconds} s
+            {selected.typeLabel} · {DIFFICULTY_LABELS[selected.difficulty] ?? 'Media'} · sugerido {selected.suggestedSeconds} s
             {selected.attempts > 0 ? ` · intentos ${selected.attempts}` : ''}
           </p>
         </div>

@@ -41,18 +41,26 @@ test('crea 15 preguntas en orden aleatorio, una por pieza, sin exponer la respue
   });
 });
 
-test('orden oculto: una respuesta correcta fuera de turno no pinta; al llegar su turno se incorpora en cascada', async () => {
+test('orden oculto: una respuesta correcta fuera de turno descarta su pieza para siempre', async () => {
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
 
   const early = await service.answer(id, byNumber.get(2).id, correctAnswer(byNumber.get(2)));
-  assert.equal(early.feedback.code, 'CORRECT_PENDING');
+  assert.equal(early.feedback.code, 'CORRECT_NOT_PLACED');
   assert.equal(early.game.progress.painted, 0);
+  assert.equal(early.questions.find((q) => q.number === 2).status, 'solved');
 
+  // La pieza 1 sí toca: se pinta ella sola (la 2 NO se incorpora aunque ya estuviera acertada).
   const first = await service.answer(id, byNumber.get(1).id, correctAnswer(byNumber.get(1)));
   assert.equal(first.feedback.code, 'CORRECT_PLACED');
-  assert.equal(first.game.progress.painted, 2);
-  assert.deepEqual(first.events.filter((e) => e.type === 'PiecePainted').map((e) => e.payload.number), [1, 2]);
+  assert.equal(first.game.progress.painted, 1);
+  assert.deepEqual(first.events.filter((e) => e.type === 'PiecePainted').map((e) => e.payload.number), [1]);
+
+  // La pieza 2 quedó perdida: la secuencia sigue con la 3 y la pregunta 2 no se puede repetir.
+  const third = await service.answer(id, byNumber.get(3).id, correctAnswer(byNumber.get(3)));
+  assert.equal(third.feedback.code, 'CORRECT_PLACED');
+  assert.equal(third.game.progress.painted, 2);
+  await assert.rejects(() => service.answer(id, byNumber.get(2).id, correctAnswer(byNumber.get(2))), { code: 'QUESTION_LOCKED' });
 });
 
 test('respuesta incorrecta no pinta, registra el intento y permite reintentar', async () => {
@@ -79,19 +87,49 @@ test('pasar una pregunta la marca como pasada y se puede responder después', as
   assert.equal(done.feedback.code, 'CORRECT_PLACED');
 });
 
-test('partida completa: victoria, imagen igual a la objetivo y resultados coherentes', async () => {
+test('descubrir la secuencia: responder en el orden correcto gana con la imagen 100% igual', async () => {
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
   let last;
-  for (let n = 15; n >= 1; n -= 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
+  for (let n = 1; n <= 15; n += 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
   assert.equal(last.game.status, 'finished');
   const { result } = await service.result(id);
   assert.equal(result.outcome, 'won');
+  assert.equal(result.reason, 'completed');
   assert.equal(result.comparison.completed, true);
   assert.equal(result.stats.correct, 15);
   assert.equal(result.accuracy, 100);
   assert.equal(result.targetPuzzle.length, 15);
   await assert.rejects(() => service.answer(id, byNumber.get(1).id, 'x'), { code: 'GAME_FINISHED' });
+});
+
+test('acertar las 15 preguntas sin seguir la secuencia NO gana: faltan piezas', async () => {
+  const { service } = setup();
+  const { id, byNumber } = await newStartedGame(service);
+  let last;
+  for (let n = 15; n >= 1; n -= 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
+  assert.equal(last.game.status, 'finished', 'sin preguntas por responder la partida termina');
+  const { result } = await service.result(id);
+  assert.equal(result.stats.correct, 15);
+  assert.equal(result.outcome, 'lost');
+  assert.equal(result.reason, 'incomplete');
+  assert.equal(result.comparison.completed, false);
+  assert.equal(result.comparison.matched, 1);
+});
+
+test('una sola pieza perdida basta para no ganar, aunque el resto siga el orden', async () => {
+  const { service } = setup();
+  const { id, byNumber } = await newStartedGame(service);
+  await service.answer(id, byNumber.get(5).id, correctAnswer(byNumber.get(5))); // fuera de turno: pieza 5 perdida
+  let last;
+  for (let n = 1; n <= 15; n += 1) {
+    if (n === 5) continue;
+    last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
+  }
+  assert.equal(last.game.progress.painted, 14);
+  const { result } = await service.result(id);
+  assert.equal(result.outcome, 'lost');
+  assert.deepEqual(result.comparison.pieces.filter((p) => p.status === 'missing').map((p) => p.number), [5]);
 });
 
 test('el servidor decide el tiempo: al agotarse la partida termina como derrota', async () => {
@@ -134,11 +172,11 @@ test('validación de formato: una entrada inválida no cuenta como intento', asy
 test('Strategy: formatos de respuesta', () => {
   const factory = new QuestionFactory({ strategies: createDefaultStrategyRegistry() });
   const make = (code) => factory.create({ ...byCode.get(code), id: code });
-  assert.equal(make('Q01').check(' 153 ').correct, true);
-  assert.equal(make('Q09').check('v, f, v').correct, true);
+  assert.equal(make('Q01').check(' 33 ').correct, true);
+  assert.equal(make('Q09').check('f, v, v').correct, true);
   assert.equal(make('Q09').check('VFF').correct, false);
   assert.equal(make('Q09').check('VF').valid, false);
-  assert.equal(make('Q02').check('b').correct, true);
+  assert.equal(make('Q02').check('c').correct, true);
   assert.equal(make('Q02').check('Z').valid, false);
 });
 

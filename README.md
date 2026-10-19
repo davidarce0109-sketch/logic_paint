@@ -1,6 +1,6 @@
 # Logic Paint
 
-Puzle lógico + preguntas difíciles + construcción progresiva de una imagen + presión de tiempo.
+Puzle lógico + preguntas de razonamiento + construcción progresiva de una imagen + presión de tiempo.
 El jugador resuelve preguntas que aparecen mezcladas; cada una está ligada a una pieza (forma, color y posición)
 de una imagen oculta. La imagen solo avanza cuando se cumple una regla interna que el jugador debe descubrir.
 
@@ -44,10 +44,13 @@ Pruebas del dominio: `cd backend && npm test`.
 - 15 preguntas (configurable con `QUESTION_COUNT`), 15 minutos (`GAME_DURATION_SECONDS`).
 - Las preguntas aparecen mezcladas; se puede responder, pasar y volver.
 - Respuesta incorrecta: no pinta, queda registrada y se puede reintentar.
-- Respuesta correcta: la pieza solo se pinta si es la que toca en la construcción de la imagen. Si aún no
-  puede incorporarse, el jugador recibe "Respuesta correcta. Esta pieza aún no puede incorporarse." sin pistas sobre
-  el orden. Cuando llega su turno, las preguntas ya resueltas se incorporan en cascada.
-- Se gana solo si la imagen del jugador coincide con la objetivo (`comparePuzzle`), no por cantidad de aciertos.
+- Respuesta correcta: la pieza solo se pinta si es la que toca en la secuencia. Si no lo es, el jugador recibe
+  "Respuesta correcta, pero esta pieza no pudo incorporarse a la imagen." sin pistas sobre el orden; esa pieza se
+  pierde para siempre y la pregunta queda bloqueada (la secuencia continúa con la siguiente pieza no perdida).
+- Se gana solo si la imagen del jugador coincide al 100 % con la objetivo (`comparePuzzle`): acertar las 15 preguntas
+  fuera de secuencia termina en derrota. La única forma de ganar es descubrir la secuencia.
+- La partida termina al completar la imagen, al agotarse el tiempo o cuando ya no queda ninguna pregunta por responder.
+- Nivel de las preguntas: estudiantes de sexto a noveno grado, 20-40 segundos por pregunta.
 - El tiempo, el puntaje, las respuestas correctas y la victoria los decide el servidor.
 
 ## Patrones de diseño utilizados

@@ -90,6 +90,7 @@ class GameFactory {
   assemble({ id, player, entries, status, timer, score, stats, lastActionAt, createdAt }) {
     const count = entries.length;
     const painted = entries.filter((entry) => entry.status === QuestionStatus.PLACED).map((entry) => entry.number);
+    const lost = entries.filter((entry) => entry.status === QuestionStatus.LOCKED).map((entry) => entry.number);
     const { pieces, meta } = this.puzzleDefinition;
 
     const events = new GameEventSubject(this.clock);
@@ -106,7 +107,7 @@ class GameFactory {
       id,
       player,
       entries,
-      puzzle: Puzzle.fromDefinitions(pieces, count, painted),
+      puzzle: Puzzle.fromDefinitions(pieces, count, painted, lost),
       targetPuzzle: Puzzle.completeFromDefinitions(pieces, count),
       puzzleMeta: meta,
       timer: timer instanceof Timer ? timer : new Timer(timer),

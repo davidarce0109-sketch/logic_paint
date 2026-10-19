@@ -141,6 +141,7 @@ a { color: var(--lantern); }
 .feedback { border-radius: 0.8rem; padding: 0.9rem 1rem; display: grid; gap: 0.6rem; animation: feedback-in 0.3s ease both; }
 .feedback--good { background: rgba(95, 191, 138, 0.14); border: 1px solid var(--kelp); }
 .feedback--bad { background: rgba(229, 103, 93, 0.14); border: 1px solid var(--coral); }
+.feedback--warn { background: rgba(245, 197, 66, 0.12); border: 1px solid var(--lantern); }
 .feedback--neutral { background: rgba(207, 239, 245, 0.1); border: 1px solid var(--foam); }
 .feedback__message { font-weight: 600; }
 .feedback__explanation { color: var(--chalk); opacity: 0.9; font-size: 0.97rem; }

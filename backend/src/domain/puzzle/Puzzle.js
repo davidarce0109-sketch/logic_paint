@@ -1,29 +1,41 @@
 const PuzzlePiece = require('./PuzzlePiece');
 
-/** Modelo estructurado de la imagen: la representación visual es solo una capa de presentación. */
+/**
+ * Modelo estructurado de la imagen: la representación visual es solo una capa de presentación.
+ * Cada pieza solo puede pintarse cuando es "la que toca" en la secuencia. Si se acierta su pregunta
+ * en otro momento, la pieza se descarta (forfeit) y ya no puede recuperarse en la partida.
+ */
 class Puzzle {
-  constructor(pieces) {
+  constructor(pieces, lostNumbers = []) {
     this.pieces = [...pieces].sort((a, b) => a.number - b.number);
+    this.lost = new Set(lostNumbers);
   }
 
-  static fromDefinitions(definitions, count, paintedNumbers = []) {
+  static fromDefinitions(definitions, count, paintedNumbers = [], lostNumbers = []) {
     const painted = new Set(paintedNumbers);
-    return new Puzzle(definitions.slice(0, count).map((d) => new PuzzlePiece(d, painted.has(d.number))));
+    const pieces = definitions.slice(0, count).map((d) => new PuzzlePiece(d, painted.has(d.number)));
+    return new Puzzle(pieces, lostNumbers);
   }
 
   static completeFromDefinitions(definitions, count) {
     return new Puzzle(definitions.slice(0, count).map((d) => new PuzzlePiece(d, true)));
   }
 
-  /** Número de la siguiente pieza que puede incorporarse (null si la imagen está completa). */
+  /** Número de la siguiente pieza que toca incorporar, saltando las descartadas (null si no queda ninguna). */
   nextRequiredNumber() {
-    const next = this.pieces.find((piece) => !piece.completed);
+    const next = this.pieces.find((piece) => !piece.completed && !this.lost.has(piece.number));
     return next ? next.number : null;
   }
 
   paint(number) {
-    if (number !== this.nextRequiredNumber()) throw new Error(`La pieza ${number} no puede pintarse todavía`);
+    if (number !== this.nextRequiredNumber()) throw new Error(`La pieza ${number} no puede pintarse en este momento`);
     this.pieces.find((piece) => piece.number === number).paint();
+  }
+
+  /** Descarta definitivamente una pieza que no tocaba. */
+  forfeit(number) {
+    const piece = this.pieces.find((candidate) => candidate.number === number);
+    if (piece && !piece.completed) this.lost.add(number);
   }
 
   isComplete() {

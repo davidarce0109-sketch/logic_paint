@@ -1,4 +1,4 @@
-const { GameStatus, EventType, Outcome, QuestionStatus } = require('../constants');
+const { GameStatus, EventType, Outcome } = require('../constants');
 const { NotFoundError, GameStateError } = require('../../utils/AppError');
 const PuzzleComparator = require('../puzzle/PuzzleComparator');
 const { createState } = require('./states');
@@ -63,34 +63,37 @@ class Game {
   }
 
   /**
-   * Orden oculto: solo se pinta la pieza que toca. Al incorporarla, las preguntas ya resueltas
-   * cuyo turno llega a continuación se incorporan en cascada.
+   * Orden oculto: una respuesta correcta solo incorpora su pieza si es la que toca en la secuencia.
+   * Si no lo es, la pieza se descarta y la pregunta queda bloqueada: no hay segunda oportunidad.
    */
-  placeAvailablePieces() {
-    const placed = [];
-    for (;;) {
-      const next = this.puzzle.nextRequiredNumber();
-      const entry = next === null ? null : this.entries.find((candidate) => candidate.number === next);
-      if (!entry || entry.status !== QuestionStatus.SOLVED) break;
-      this.puzzle.paint(next);
-      entry.markPlaced();
-      placed.push(next);
-      const piece = this.puzzle.pieces.find((candidate) => candidate.number === next);
-      this.emit(EventType.PIECE_PAINTED, {
-        questionId: entry.id,
-        number: next,
-        pieceId: piece.id,
-        shape: piece.shape,
-        color: piece.color,
-      });
+  placePiece(entry) {
+    if (entry.number !== this.puzzle.nextRequiredNumber()) {
+      this.puzzle.forfeit(entry.number);
+      entry.markLocked();
+      return false;
     }
-    return placed;
+    this.puzzle.paint(entry.number);
+    entry.markPlaced();
+    const piece = this.puzzle.pieces.find((candidate) => candidate.number === entry.number);
+    this.emit(EventType.PIECE_PAINTED, {
+      questionId: entry.id,
+      number: entry.number,
+      pieceId: piece.id,
+      shape: piece.shape,
+      color: piece.color,
+    });
+    return true;
   }
 
+  hasAnswerableQuestions() {
+    return this.entries.some((entry) => entry.canBeAnswered());
+  }
+
+  /** Termina la partida sin que se agote el tiempo: imagen completa o ya no quedan preguntas por responder. */
   complete() {
     this.timer.stop(this.now());
     this.transitionTo(GameStatus.FINISHED);
-    this.emit(EventType.GAME_COMPLETED, { outcome: Outcome.WON });
+    this.emit(EventType.GAME_COMPLETED, { outcome: this.puzzle.isComplete() ? Outcome.WON : Outcome.LOST });
   }
 
   expire() {
@@ -132,7 +135,7 @@ class Game {
     const now = this.now();
     return {
       outcome: won ? Outcome.WON : Outcome.LOST,
-      reason: won ? 'completed' : 'time_expired',
+      reason: won ? 'completed' : (this.status === GameStatus.TIME_EXPIRED ? 'time_expired' : 'incomplete'),
       playerName: this.player.name,
       durationMs: this.timer.durationMs,
       elapsedMs: this.timer.elapsedMs(now),

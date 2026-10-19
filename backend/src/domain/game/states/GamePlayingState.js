@@ -33,8 +33,7 @@ class GamePlayingState extends GameState {
     const points = game.scoreManager.points(entry.question, context, check.correct);
     entry.registerAttempt();
     game.touch();
-    if (check.correct) entry.markSolved();
-    else entry.markIncorrect();
+    if (!check.correct) entry.markIncorrect();
 
     game.emit(EventType.QUESTION_ANSWERED, {
       questionId: entry.id,
@@ -49,9 +48,9 @@ class GamePlayingState extends GameState {
       return { feedback: { code: FeedbackCode.INCORRECT, message: FEEDBACK_MESSAGES[FeedbackCode.INCORRECT] } };
     }
 
-    const placed = game.placeAvailablePieces();
-    if (game.puzzle.isComplete()) game.complete();
-    const code = placed.includes(entry.number) ? FeedbackCode.CORRECT_PLACED : FeedbackCode.CORRECT_PENDING;
+    const placed = game.placePiece(entry);
+    if (game.puzzle.isComplete() || !game.hasAnswerableQuestions()) game.complete();
+    const code = placed ? FeedbackCode.CORRECT_PLACED : FeedbackCode.CORRECT_NOT_PLACED;
     return {
       questionId: entry.id,
       feedback: { code, message: FEEDBACK_MESSAGES[code], explanation: entry.question.explanation },

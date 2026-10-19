@@ -10,8 +10,8 @@ const QuestionStatus = Object.freeze({
   PENDING: 'pending',
   PASSED: 'passed',
   INCORRECT: 'incorrect',
-  SOLVED: 'solved',
   PLACED: 'placed',
+  LOCKED: 'locked',
 });
 
 const AnswerFormat = Object.freeze({
@@ -45,13 +45,13 @@ const Outcome = Object.freeze({ WON: 'won', LOST: 'lost' });
 const FeedbackCode = Object.freeze({
   INCORRECT: 'INCORRECT',
   CORRECT_PLACED: 'CORRECT_PLACED',
-  CORRECT_PENDING: 'CORRECT_PENDING',
+  CORRECT_NOT_PLACED: 'CORRECT_NOT_PLACED',
 });
 
 const FEEDBACK_MESSAGES = Object.freeze({
   [FeedbackCode.INCORRECT]: 'Respuesta incorrecta. Revisa tu razonamiento y vuelve a intentarlo, o pasa a otra pregunta.',
   [FeedbackCode.CORRECT_PLACED]: 'Respuesta correcta. La imagen avanzó.',
-  [FeedbackCode.CORRECT_PENDING]: 'Respuesta correcta. Esta pieza aún no puede incorporarse.',
+  [FeedbackCode.CORRECT_NOT_PLACED]: 'Respuesta correcta, pero esta pieza no pudo incorporarse a la imagen.',
 });
 
 const SCORING = Object.freeze({
@@ -59,7 +59,7 @@ const SCORING = Object.freeze({
   WRONG_PENALTY: 20,
   HINT_PENALTY_RATIO: 0.25,
   SPEED_BONUS_RATIO: 0.25,
-  DIFFICULTY_BASELINE: 3,
+  DIFFICULTY_BASELINE: 2,
   DIFFICULTY_STEP: 0.25,
 });
 

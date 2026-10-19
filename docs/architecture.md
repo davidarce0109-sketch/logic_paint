@@ -14,7 +14,7 @@ React (pages/components/hooks/context) ──HTTP /api──▶ controllers ─�
 
 ## Decisiones clave
 
-1. **Orden oculto.** `Puzzle.nextRequiredNumber()` indica la pieza que toca. `Game.placeAvailablePieces()` pinta solo esa y, en cascada, las siguientes ya resueltas. Una respuesta correcta fuera de turno queda como *resuelta* y devuelve el mensaje neutro "aún no puede incorporarse". Para el jugador, "resuelta" y "ya incorporada" se ven igual.
+1. **Orden oculto.** `Puzzle.nextRequiredNumber()` indica la pieza que toca (saltando las perdidas). `Game.placePiece()` pinta la pieza solo si la pregunta acertada es esa; si no, `Puzzle.forfeit()` la descarta y la pregunta queda `locked` sin posibilidad de recuperarla. Para el jugador, toda pregunta acertada se ve como "resuelta". La victoria exige imagen idéntica, así que solo se gana descubriendo la secuencia; con una pieza perdida el resultado es derrota (`reason: incomplete`).
 2. **Autoridad del servidor.** `Timer` usa reloj inyectable y el estado vence en el backend (`tick()`); la pausa descuenta el tiempo pausado. El cliente solo anima la cuenta regresiva y se reancla con cada respuesta.
 3. **Sin trampas.** `correctAnswer` y `explanation` no están en `Question.toPublic()`. La explicación se envía tras acertar y el repaso completo, al terminar. Una respuesta incorrecta no revela la explicación para no regalar el reintento.
 4. **Imagen como datos.** `PuzzleDefinition` → `Puzzle`/`PuzzlePiece` → `PuzzleComparator.compare` (forma, color, posición, completada). El SVG es solo presentación.
@@ -23,4 +23,4 @@ React (pages/components/hooks/context) ──HTTP /api──▶ controllers ─�
 
 ## Pruebas
 
-`backend/tests/game.test.js`: aleatoriedad, orden oculto y cascada, reintentos, pasar, victoria, expiración, pausa, validación, Strategy, Decorator, Observer, comparador y configuración.
+`backend/tests/game.test.js`: aleatoriedad, orden oculto y piezas perdidas, acertar todo sin secuencia (derrota), secuencia correcta (victoria), reintentos, pasar, expiración, pausa, validación, Strategy, Decorator, Observer, comparador y configuración.

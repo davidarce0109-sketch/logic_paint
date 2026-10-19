@@ -1,12 +1,16 @@
 import { formatDuration } from '../utils/format.js';
 
 const OUTCOME_COPY = {
-  won: { title: 'Victoria', text: 'Completaste la imagen: coincide con la imagen objetivo.' },
-  lost: { title: 'Tiempo agotado', text: 'La imagen quedó incompleta. Compárala con la imagen objetivo y vuelve a intentarlo.' },
+  completed: { title: 'Victoria', text: 'Completaste la imagen: coincide al 100 % con la imagen objetivo.' },
+  time_expired: { title: 'Tiempo agotado', text: 'La imagen quedó incompleta. Compárala con la imagen objetivo y vuelve a intentarlo.' },
+  incomplete: {
+    title: 'Imagen incompleta',
+    text: 'Respondiste las preguntas, pero a tu imagen le faltaron piezas: no basta con acertar. Compárala con la imagen objetivo y piensa qué pudo cambiar.',
+  },
 };
 
 export default function ResultSummary({ result }) {
-  const copy = OUTCOME_COPY[result.outcome];
+  const copy = OUTCOME_COPY[result.reason];
   const items = [
     ['Tiempo utilizado', formatDuration(result.elapsedMs)],
     ['Respuestas enviadas', result.stats.answered],

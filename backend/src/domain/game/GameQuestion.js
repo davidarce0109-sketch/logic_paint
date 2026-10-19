@@ -1,6 +1,8 @@
 const { QuestionStatus } = require('../constants');
 
 const OPEN_STATUSES = [QuestionStatus.PENDING, QuestionStatus.PASSED, QuestionStatus.INCORRECT];
+const CLOSED_STATUSES = [QuestionStatus.PLACED, QuestionStatus.LOCKED];
+const PUBLIC_SOLVED = 'solved';
 
 /** Una pregunta dentro de una partida concreta: pregunta + estado, intentos y orden de aparición. */
 class GameQuestion {
@@ -19,13 +21,13 @@ class GameQuestion {
   registerAttempt() { this.attempts += 1; }
   markIncorrect() { this.status = QuestionStatus.INCORRECT; }
   markPassed() { this.status = QuestionStatus.PASSED; }
-  markSolved() { this.status = QuestionStatus.SOLVED; }
   markPlaced() { this.status = QuestionStatus.PLACED; }
+  markLocked() { this.status = QuestionStatus.LOCKED; }
   markHintUsed() { this.hintUsed = true; }
 
-  /** Para el jugador, "resuelta" y "ya incorporada" son lo mismo: no se revela qué pieza espera turno. */
+  /** Para el jugador, toda pregunta acertada es "resuelta": no se revela si su pieza llegó a la imagen. */
   publicStatus() {
-    return this.status === QuestionStatus.PLACED ? QuestionStatus.SOLVED : this.status;
+    return CLOSED_STATUSES.includes(this.status) ? PUBLIC_SOLVED : this.status;
   }
 
   toPublic() {

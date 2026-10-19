@@ -24,6 +24,8 @@ export const STATUS_LABELS = Object.freeze({
   solved: 'Resuelta',
 });
 
+export const DIFFICULTY_LABELS = Object.freeze({ 1: 'Fácil', 2: 'Media', 3: 'Media-alta' });
+
 export const ANSWER_FORMAT = Object.freeze({
   MULTIPLE_CHOICE: 'multiple_choice',
   NUMERIC: 'numeric',
@@ -33,7 +35,7 @@ export const ANSWER_FORMAT = Object.freeze({
 export const FEEDBACK_TONE = Object.freeze({
   INCORRECT: 'bad',
   CORRECT_PLACED: 'good',
-  CORRECT_PENDING: 'neutral',
+  CORRECT_NOT_PLACED: 'warn',
 });
 
 export const GAME_EVENTS = Object.freeze({

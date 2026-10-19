@@ -16,7 +16,7 @@ classDiagram
     +skipQuestion(questionId)
     +useHint(questionId)
     +tick()
-    +placeAvailablePieces()
+    +placePiece(entry)
     +toResultView()
   }
   class GameState {
@@ -123,7 +123,7 @@ classDiagram
   GameEventSubject o-- Observer
   Game --> GameEventSubject
 
-  class Puzzle { +nextRequiredNumber() +paint(n) +isComplete() }
+  class Puzzle { +nextRequiredNumber() +paint(n) +forfeit(n) +isComplete() }
   class PuzzlePiece { +id +number +shape +color +position +completed }
   class PuzzleComparator { +compare(player, target) }
   Puzzle *-- "n" PuzzlePiece
@@ -188,14 +188,17 @@ sequenceDiagram
     G-->>S: feedback INCORRECT
   else correcta
     G->>P: nextRequiredNumber()
-    loop mientras la siguiente pieza ya esté resuelta
+    alt es la pieza que toca
       G->>P: paint(n)
       G->>E: emit PiecePainted
+      G-->>S: feedback CORRECT_PLACED
+    else no era la que toca
+      G->>P: forfeit(n) (pieza perdida, pregunta bloqueada)
+      G-->>S: feedback CORRECT_NOT_PLACED
     end
-    opt imagen completa
-      G->>E: emit GameCompleted (estado Finished)
+    opt imagen completa o sin preguntas por responder
+      G->>E: emit GameCompleted (estado Finished: victoria o derrota)
     end
-    G-->>S: feedback CORRECT_PLACED o CORRECT_PENDING
   end
   S->>R: save(game) (siempre)
   S-->>UI: game, questions, feedback, events

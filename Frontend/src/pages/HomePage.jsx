@@ -20,7 +20,7 @@ export default function HomePage() {
         <span className="logo-mark logo-mark--large" aria-hidden="true" />
         <h1 className="home__title">Logic Paint</h1>
         <p className="home__lead">
-          Resuelve preguntas de lógica difíciles y pinta, pieza a pieza, una imagen que no puedes ver.
+          Resuelve preguntas de lógica y pinta, pieza a pieza, una imagen que no puedes ver.
           Tienes 15 minutos.
         </p>
       </div>

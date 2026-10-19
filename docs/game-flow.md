@@ -11,15 +11,17 @@ flowchart TD
   F -->|Responder| G{¿Correcta?}
   F -->|Pasar| E
   G -->|No| H[Feedback, intento registrado] --> E
-  G -->|Sí| I{¿Es la pieza que toca?}
-  I -->|No| J[Resuelta: aún no puede incorporarse] --> E
-  I -->|Sí| K[Pintar pieza y piezas resueltas siguientes]
-  K --> L{¿Imagen completa?}
-  L -->|No| E
+  G -->|Sí| I{¿Es la pieza que toca en la secuencia?}
+  I -->|No| J[Pieza perdida, pregunta bloqueada] --> L
+  I -->|Sí| K[Pintar pieza] --> L{¿Imagen completa?}
   L -->|Sí| M[Victoria]
+  L -->|No| P{¿Quedan preguntas por responder?}
+  P -->|Sí| E
+  P -->|No| Q[Fin: imagen incompleta = derrota]
   E -->|Tiempo agotado| N[Derrota]
   M --> O[Resultados: imagen propia vs objetivo]
   N --> O
+  Q --> O
 ```
 
 ## Estados de una pregunta
@@ -29,8 +31,8 @@ flowchart TD
 | `pending` | Pendiente | Sin intentos |
 | `passed` | Pasada | El jugador la saltó; puede volver |
 | `incorrect` | Incorrecta | Último intento falló; puede reintentar |
-| `solved` | Resuelta | Correcta, esperando su turno de incorporarse |
-| `placed` | Resuelta | Correcta e incorporada a la imagen |
+| `placed` | Resuelta | Correcta y su pieza se incorporó a la imagen |
+| `locked` | Resuelta | Correcta, pero no era la que tocaba: la pieza se perdió y la pregunta ya no se puede repetir |
 
 ## Puntaje
 

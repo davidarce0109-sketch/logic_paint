@@ -3,7 +3,8 @@ const { pieceIdFor } = require('./pieceId');
 /**
  * Definición declarativa de la imagen objetivo: "El faro de medianoche".
  * Es solo datos: cualquier otra imagen puede reemplazarla sin tocar la lógica.
- * El número de la pieza es el orden interno de construcción (también orden de pintado en el SVG).
+ * El número de la pieza fija su capa en el SVG (1 al fondo, 15 al frente). La secuencia que debe seguir
+ * el jugador (por defecto descendente: 15 → 1) la define Puzzle, no esta definición.
  */
 const piece = (number, shape, color, position, geometry) => ({
   id: pieceIdFor(number),

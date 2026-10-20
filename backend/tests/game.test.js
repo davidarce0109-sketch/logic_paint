@@ -45,28 +45,35 @@ test('orden oculto: una respuesta correcta fuera de turno descarta su pieza para
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
 
+  // La secuencia es descendente: la primera que toca es la 15. Acertar la 2 antes la pierde.
   const early = await service.answer(id, byNumber.get(2).id, correctAnswer(byNumber.get(2)));
   assert.equal(early.feedback.code, 'CORRECT_NOT_PLACED');
   assert.equal(early.game.progress.painted, 0);
   assert.equal(early.questions.find((q) => q.number === 2).status, 'solved');
 
-  // La pieza 1 sí toca: se pinta ella sola (la 2 NO se incorpora aunque ya estuviera acertada).
-  const first = await service.answer(id, byNumber.get(1).id, correctAnswer(byNumber.get(1)));
+  const first = await service.answer(id, byNumber.get(15).id, correctAnswer(byNumber.get(15)));
   assert.equal(first.feedback.code, 'CORRECT_PLACED');
   assert.equal(first.game.progress.painted, 1);
-  assert.deepEqual(first.events.filter((e) => e.type === 'PiecePainted').map((e) => e.payload.number), [1]);
+  assert.deepEqual(first.events.filter((e) => e.type === 'PiecePainted').map((e) => e.payload.number), [15]);
 
-  // La pieza 2 quedó perdida: la secuencia sigue con la 3 y la pregunta 2 no se puede repetir.
-  const third = await service.answer(id, byNumber.get(3).id, correctAnswer(byNumber.get(3)));
-  assert.equal(third.feedback.code, 'CORRECT_PLACED');
-  assert.equal(third.game.progress.painted, 2);
+  const second = await service.answer(id, byNumber.get(14).id, correctAnswer(byNumber.get(14)));
+  assert.equal(second.feedback.code, 'CORRECT_PLACED');
+  assert.equal(second.game.progress.painted, 2);
   await assert.rejects(() => service.answer(id, byNumber.get(2).id, correctAnswer(byNumber.get(2))), { code: 'QUESTION_LOCKED' });
+});
+
+test('el orden ascendente (1, 2, 3…) ya no es el correcto', async () => {
+  const { service } = setup();
+  const { id, byNumber } = await newStartedGame(service);
+  const wrongStart = await service.answer(id, byNumber.get(1).id, correctAnswer(byNumber.get(1)));
+  assert.equal(wrongStart.feedback.code, 'CORRECT_NOT_PLACED');
+  assert.equal(wrongStart.game.progress.painted, 0);
 });
 
 test('respuesta incorrecta no pinta, registra el intento y permite reintentar', async () => {
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
-  const q1 = byNumber.get(1);
+  const q1 = byNumber.get(15);
   const wrong = await service.answer(id, q1.id, '0');
   assert.equal(wrong.feedback.code, 'INCORRECT');
   assert.equal(wrong.feedback.explanation, undefined);
@@ -79,7 +86,7 @@ test('respuesta incorrecta no pinta, registra el intento y permite reintentar', 
 test('pasar una pregunta la marca como pasada y se puede responder después', async () => {
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
-  const q1 = byNumber.get(1);
+  const q1 = byNumber.get(15);
   const skipped = await service.skip(id, q1.id);
   assert.equal(skipped.game.stats.skipped, 1);
   assert.equal(skipped.questions.find((q) => q.id === q1.id).status, 'passed');
@@ -87,11 +94,11 @@ test('pasar una pregunta la marca como pasada y se puede responder después', as
   assert.equal(done.feedback.code, 'CORRECT_PLACED');
 });
 
-test('descubrir la secuencia: responder en el orden correcto gana con la imagen 100% igual', async () => {
+test('descubrir la secuencia: responder 15, 14, 13… 1 gana con la imagen 100% igual', async () => {
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
   let last;
-  for (let n = 1; n <= 15; n += 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
+  for (let n = 15; n >= 1; n -= 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
   assert.equal(last.game.status, 'finished');
   const { result } = await service.result(id);
   assert.equal(result.outcome, 'won');
@@ -107,7 +114,7 @@ test('acertar las 15 preguntas sin seguir la secuencia NO gana: faltan piezas', 
   const { service } = setup();
   const { id, byNumber } = await newStartedGame(service);
   let last;
-  for (let n = 15; n >= 1; n -= 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
+  for (let n = 1; n <= 15; n += 1) last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
   assert.equal(last.game.status, 'finished', 'sin preguntas por responder la partida termina');
   const { result } = await service.result(id);
   assert.equal(result.stats.correct, 15);
@@ -122,7 +129,7 @@ test('una sola pieza perdida basta para no ganar, aunque el resto siga el orden'
   const { id, byNumber } = await newStartedGame(service);
   await service.answer(id, byNumber.get(5).id, correctAnswer(byNumber.get(5))); // fuera de turno: pieza 5 perdida
   let last;
-  for (let n = 1; n <= 15; n += 1) {
+  for (let n = 15; n >= 1; n -= 1) {
     if (n === 5) continue;
     last = await service.answer(id, byNumber.get(n).id, correctAnswer(byNumber.get(n)));
   }

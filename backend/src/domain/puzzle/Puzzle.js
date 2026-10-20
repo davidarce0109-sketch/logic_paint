@@ -1,4 +1,5 @@
 const PuzzlePiece = require('./PuzzlePiece');
+const { SequenceOrder, DEFAULT_SEQUENCE_ORDER } = require('../constants');
 
 /**
  * Modelo estructurado de la imagen: la representación visual es solo una capa de presentación.
@@ -6,24 +7,30 @@ const PuzzlePiece = require('./PuzzlePiece');
  * en otro momento, la pieza se descarta (forfeit) y ya no puede recuperarse en la partida.
  */
 class Puzzle {
-  constructor(pieces, lostNumbers = []) {
+  constructor(pieces, lostNumbers = [], sequenceOrder = DEFAULT_SEQUENCE_ORDER) {
     this.pieces = [...pieces].sort((a, b) => a.number - b.number);
     this.lost = new Set(lostNumbers);
+    this.sequenceOrder = sequenceOrder;
   }
 
-  static fromDefinitions(definitions, count, paintedNumbers = [], lostNumbers = []) {
+  static fromDefinitions(definitions, count, paintedNumbers = [], lostNumbers = [], sequenceOrder = DEFAULT_SEQUENCE_ORDER) {
     const painted = new Set(paintedNumbers);
     const pieces = definitions.slice(0, count).map((d) => new PuzzlePiece(d, painted.has(d.number)));
-    return new Puzzle(pieces, lostNumbers);
+    return new Puzzle(pieces, lostNumbers, sequenceOrder);
   }
 
   static completeFromDefinitions(definitions, count) {
     return new Puzzle(definitions.slice(0, count).map((d) => new PuzzlePiece(d, true)));
   }
 
+  /** Piezas en el orden de la secuencia oculta (por defecto descendente: 15, 14, 13… 1). */
+  sequence() {
+    return this.sequenceOrder === SequenceOrder.ASCENDING ? this.pieces : [...this.pieces].reverse();
+  }
+
   /** Número de la siguiente pieza que toca incorporar, saltando las descartadas (null si no queda ninguna). */
   nextRequiredNumber() {
-    const next = this.pieces.find((piece) => !piece.completed && !this.lost.has(piece.number));
+    const next = this.sequence().find((piece) => !piece.completed && !this.lost.has(piece.number));
     return next ? next.number : null;
   }
 

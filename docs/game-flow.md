@@ -11,7 +11,7 @@ flowchart TD
   F -->|Responder| G{¿Correcta?}
   F -->|Pasar| E
   G -->|No| H[Feedback, intento registrado] --> E
-  G -->|Sí| I{¿Es la pieza que toca en la secuencia?}
+  G -->|Sí| I{¿Es la que toca en la secuencia descendente 15 → 1?}
   I -->|No| J[Pieza perdida, pregunta bloqueada] --> L
   I -->|Sí| K[Pintar pieza] --> L{¿Imagen completa?}
   L -->|Sí| M[Victoria]

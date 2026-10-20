@@ -40,6 +40,10 @@ const EventType = Object.freeze({
   TIME_EXPIRED: 'TimeExpired',
 });
 
+/** Dirección de la secuencia oculta que el jugador debe descubrir. */
+const SequenceOrder = Object.freeze({ ASCENDING: 'ascending', DESCENDING: 'descending' });
+const DEFAULT_SEQUENCE_ORDER = SequenceOrder.DESCENDING;
+
 const Outcome = Object.freeze({ WON: 'won', LOST: 'lost' });
 
 const FeedbackCode = Object.freeze({
@@ -75,6 +79,8 @@ module.exports = {
   AnswerFormat,
   QuestionType,
   EventType,
+  SequenceOrder,
+  DEFAULT_SEQUENCE_ORDER,
   Outcome,
   FeedbackCode,
   FEEDBACK_MESSAGES,

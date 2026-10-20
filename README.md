@@ -48,7 +48,7 @@ Pruebas del dominio: `cd backend && npm test`.
   "Respuesta correcta, pero esta pieza no pudo incorporarse a la imagen." sin pistas sobre el orden; esa pieza se
   pierde para siempre y la pregunta queda bloqueada (la secuencia continúa con la siguiente pieza no perdida).
 - Se gana solo si la imagen del jugador coincide al 100 % con la objetivo (`comparePuzzle`): acertar las 15 preguntas
-  fuera de secuencia termina en derrota. La única forma de ganar es descubrir la secuencia.
+  fuera de secuencia termina en derrota. La única forma de ganar es descubrir la secuencia, que es descendente: 15, 14, 13… 1 (configurable en `domain/constants.js` con `DEFAULT_SEQUENCE_ORDER`).
 - La partida termina al completar la imagen, al agotarse el tiempo o cuando ya no queda ninguna pregunta por responder.
 - Nivel de las preguntas: estudiantes de sexto a noveno grado, 20-40 segundos por pregunta.
 - El tiempo, el puntaje, las respuestas correctas y la victoria los decide el servidor.

@@ -14,7 +14,7 @@ React (pages/components/hooks/context) ──HTTP /api──▶ controllers ─�
 
 ## Decisiones clave
 
-1. **Orden oculto.** `Puzzle.nextRequiredNumber()` indica la pieza que toca según la secuencia descendente 15 → 1 (saltando las perdidas; el sentido se cambia con `SequenceOrder`). `Game.placePiece()` pinta la pieza solo si la pregunta acertada es esa; si no, `Puzzle.forfeit()` la descarta y la pregunta queda `locked` sin posibilidad de recuperarla. Para el jugador, toda pregunta acertada se ve como "resuelta". La victoria exige imagen idéntica, así que solo se gana descubriendo la secuencia; con una pieza perdida el resultado es derrota (`reason: incomplete`).
+1. **Reglas en el servidor.** Las reglas que determinan cuándo y cómo se incorpora cada pieza a la imagen (y por tanto el resultado de la partida) viven exclusivamente en el dominio del backend (`Game`, `Puzzle`); el cliente solo recibe el estado resultante y nunca puede decidirlas.
 2. **Autoridad del servidor.** `Timer` usa reloj inyectable y el estado vence en el backend (`tick()`); la pausa descuenta el tiempo pausado. El cliente solo anima la cuenta regresiva y se reancla con cada respuesta.
 3. **Sin trampas.** `correctAnswer` y `explanation` no están en `Question.toPublic()`. La explicación se envía tras acertar y el repaso completo, al terminar. Una respuesta incorrecta no revela la explicación para no regalar el reintento.
 4. **Imagen como datos.** `PuzzleDefinition` → `Puzzle`/`PuzzlePiece` → `PuzzleComparator.compare` (forma, color, posición, completada). El SVG es solo presentación.
@@ -23,4 +23,4 @@ React (pages/components/hooks/context) ──HTTP /api──▶ controllers ─�
 
 ## Pruebas
 
-`backend/tests/game.test.js`: aleatoriedad, orden oculto y piezas perdidas, acertar todo sin secuencia (derrota), secuencia correcta (victoria), reintentos, pasar, expiración, pausa, validación, Strategy, Decorator, Observer, comparador y configuración.
+`backend/tests/game.test.js`: aleatoriedad, reglas de incorporación de piezas, victoria y derrota, reintentos, pasar, expiración, pausa, validación, Strategy, Decorator, Observer, comparador y configuración.

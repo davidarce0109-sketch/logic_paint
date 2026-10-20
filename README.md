@@ -2,7 +2,7 @@
 
 Puzle lógico + preguntas de razonamiento + construcción progresiva de una imagen + presión de tiempo.
 El jugador resuelve preguntas que aparecen mezcladas; cada una está ligada a una pieza (forma, color y posición)
-de una imagen oculta. La imagen solo avanza cuando se cumple una regla interna que el jugador debe descubrir.
+de una imagen oculta que el jugador va construyendo mientras avanza la partida.
 
 ```
 pintar_logic/
@@ -41,17 +41,14 @@ Pruebas del dominio: `cd backend && npm test`.
 
 ## Reglas del juego
 
-- 15 preguntas (configurable con `QUESTION_COUNT`), 15 minutos (`GAME_DURATION_SECONDS`).
-- Las preguntas aparecen mezcladas; se puede responder, pasar y volver.
-- Respuesta incorrecta: no pinta, queda registrada y se puede reintentar.
-- Respuesta correcta: la pieza solo se pinta si es la que toca en la secuencia. Si no lo es, el jugador recibe
-  "Respuesta correcta, pero esta pieza no pudo incorporarse a la imagen." sin pistas sobre el orden; esa pieza se
-  pierde para siempre y la pregunta queda bloqueada (la secuencia continúa con la siguiente pieza no perdida).
-- Se gana solo si la imagen del jugador coincide al 100 % con la objetivo (`comparePuzzle`): acertar las 15 preguntas
-  fuera de secuencia termina en derrota. La única forma de ganar es descubrir la secuencia, que es descendente: 15, 14, 13… 1 (configurable en `domain/constants.js` con `DEFAULT_SEQUENCE_ORDER`).
+- 15 preguntas de lógica (configurable con `QUESTION_COUNT`) y 15 minutos (`GAME_DURATION_SECONDS`).
+- Las preguntas aparecen mezcladas; puedes responder, pasar y volver a ellas más tarde.
+- Una respuesta incorrecta no pinta nada, pero queda registrada y puedes volver a intentarlo.
+- Cada pregunta está ligada a una pieza de la imagen, con su forma y su color. Las respuestas correctas ayudan a
+  construir la imagen: observa qué ocurre con tu imagen y descubre cómo avanzar.
 - La partida termina al completar la imagen, al agotarse el tiempo o cuando ya no queda ninguna pregunta por responder.
+- Al terminar se muestra el resultado y la comparación entre tu imagen y la imagen objetivo.
 - Nivel de las preguntas: estudiantes de sexto a noveno grado, 20-40 segundos por pregunta.
-- El tiempo, el puntaje, las respuestas correctas y la victoria los decide el servidor.
 
 ## Patrones de diseño utilizados
 

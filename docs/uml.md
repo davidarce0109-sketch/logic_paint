@@ -123,7 +123,7 @@ classDiagram
   GameEventSubject o-- Observer
   Game --> GameEventSubject
 
-  class Puzzle { +nextRequiredNumber() +paint(n) +forfeit(n) +isComplete() }
+  class Puzzle { +paint(n) +isComplete() +progress() }
   class PuzzlePiece { +id +number +shape +color +position +completed }
   class PuzzleComparator { +compare(player, target) }
   Puzzle *-- "n" PuzzlePiece
@@ -187,17 +187,17 @@ sequenceDiagram
   alt incorrecta
     G-->>S: feedback INCORRECT
   else correcta
-    G->>P: nextRequiredNumber()
-    alt es la pieza que toca
-      G->>P: paint(n)
+    G->>P: aplicar reglas de incorporación de la pieza
+    alt la pieza se incorpora
+      P-->>G: pieza pintada
       G->>E: emit PiecePainted
       G-->>S: feedback CORRECT_PLACED
-    else no era la que toca
-      G->>P: forfeit(n) (pieza perdida, pregunta bloqueada)
+    else la pieza no se incorpora
+      P-->>G: sin cambios en la imagen
       G-->>S: feedback CORRECT_NOT_PLACED
     end
-    opt imagen completa o sin preguntas por responder
-      G->>E: emit GameCompleted (estado Finished: victoria o derrota)
+    opt la partida termina
+      G->>E: emit GameCompleted (estado Finished)
     end
   end
   S->>R: save(game) (siempre)

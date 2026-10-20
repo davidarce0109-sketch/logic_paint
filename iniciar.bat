@@ -25,8 +25,8 @@ call npm run db:init
 if errorlevel 1 echo [AVISO] No se pudo inicializar la base de datos. Revisa backend\.env y que MySQL este activo.
 popd
 
-start "Logic Paint - API" cmd /k "cd /d %~dp0backend && npm run dev"
-start "Logic Paint - Web" cmd /k "cd /d %~dp0Frontend && npm run dev"
+start "Logic Paint - API" cmd /k "cd /d ""%~dp0backend"" && npm run dev"
+start "Logic Paint - Web" cmd /k "cd /d ""%~dp0Frontend"" && npm run dev"
 timeout /t 5 >nul
 start http://localhost:5173
 endlocal

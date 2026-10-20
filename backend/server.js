@@ -6,7 +6,7 @@ async function main() {
   const container = await bootstrap(env);
   const app = createApp(container);
   const server = app.listen(env.port, () => {
-    console.log(`Logic Paint API escuchando en http://localhost:${env.port} (persistencia: ${env.storageDriver})`);
+    console.log(`Logic Paint API escuchando en http://localhost:${env.port} (persistencia: ${container.config.storageDriver})`);
   });
 
   const shutdown = async () => {

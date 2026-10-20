@@ -39,6 +39,23 @@ npm run dev                 # http://localhost:5173 (proxy /api -> :4000)
 Sin MySQL (solo para probar): en `backend/.env` pon `STORAGE_DRIVER=memory`.
 Pruebas del dominio: `cd backend && npm test`.
 
+## Despliegue en GitHub Pages
+
+Logic Paint incluye un **motor de juego cliente autónomo** (`Frontend/src/domain/engine/`) que permite ejecutar y disfrutar toda la experiencia del juego directamente en el navegador sin requerir un servidor backend o base de datos activa:
+
+### Método 1: Automático con GitHub Actions (Recomendado)
+1. En GitHub, ve a **Settings** > **Pages** de tu repositorio.
+2. En la sección **Build and deployment > Source**, selecciona **GitHub Actions**.
+3. Haz `git push origin main`. El workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) compilará y desplegará la aplicación en GitHub Pages automáticamente.
+
+### Método 2: Manual desde terminal
+```bash
+cd Frontend
+npm run deploy
+```
+O en Windows ejecutando el archivo [`desplegar_gh_pages.bat`](desplegar_gh_pages.bat).
+
+
 ## Reglas del juego
 
 - 15 preguntas de lógica (configurable con `QUESTION_COUNT`) y 15 minutos (`GAME_DURATION_SECONDS`).

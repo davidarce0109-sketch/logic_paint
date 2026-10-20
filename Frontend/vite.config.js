@@ -5,6 +5,7 @@ const API_TARGET = process.env.VITE_PROXY_TARGET || 'http://localhost:4000';
 
 export default defineConfig({
   plugins: [react()],
+  base: './',
   server: {
     port: 5173,
     proxy: { '/api': { target: API_TARGET, changeOrigin: true } },
